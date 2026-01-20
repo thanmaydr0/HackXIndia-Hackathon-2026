@@ -1,0 +1,440 @@
+/* 
+  Glassmorphism Design System
+  v1.0.0
+*/
+
+:root {
+    /* =========================================
+     1. Design Tokens & Variables
+     ========================================= */
+
+    /* Colors */
+    --color-primary: #00f0ff;
+    --color-secondary: #7b2cbf;
+    --color-success: #06ffa5;
+    --color-warning: #ffbe0b;
+    --color-danger: #ff006e;
+    --color-text-main: #ffffff;
+    --color-text-muted: rgba(255, 255, 255, 0.7);
+
+    /* Backgrounds (Dark Deep Space) */
+    --bg-gradient-start: #0a0e27;
+    --bg-gradient-end: #1a1f3a;
+
+    /* Glass Opacities */
+    --glass-bg-subtle: rgba(255, 255, 255, 0.05);
+    --glass-bg-medium: rgba(255, 255, 255, 0.08);
+    --glass-bg-intense: rgba(255, 255, 255, 0.1);
+    --glass-bg-hover: rgba(255, 255, 255, 0.15);
+
+    /* Glass Borders */
+    --glass-border-subtle: rgba(255, 255, 255, 0.1);
+    --glass-border-medium: rgba(255, 255, 255, 0.15);
+    --glass-border-strong: rgba(255, 255, 255, 0.2);
+
+    /* Blur Levels */
+    --blur-sm: 8px;
+    --blur-md: 12px;
+    --blur-lg: 20px;
+
+    /* Typography */
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 32px;
+    --font-size-2xl: 48px;
+
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* Spacing Scale */
+    --space-1: 0.25rem;
+    /* 4px */
+    --space-2: 0.5rem;
+    /* 8px */
+    --space-3: 0.75rem;
+    /* 12px */
+    --space-4: 1rem;
+    /* 16px */
+    --space-6: 1.5rem;
+    /* 24px */
+    --space-8: 2rem;
+    /* 32px */
+    --space-12: 3rem;
+    /* 48px */
+    --space-16: 4rem;
+    /* 64px */
+
+    /* Transitions */
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-normal: 0.3s;
+}
+
+/* =========================================
+   2. Base & Reset
+   ========================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    color: var(--color-text-main);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =========================================
+   3. Core Glass Components
+   ========================================= */
+
+/* Base Glass Panel */
+.glass-panel {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    color: var(--color-text-main);
+
+    /* GPU Acceleration */
+    transform: translateZ(0);
+}
+
+/* Variations */
+.glass-panel--subtle {
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    border-color: var(--glass-border-subtle);
+}
+
+.glass-panel--intense {
+    background: var(--glass-bg-intense);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border-color: var(--glass-border-medium);
+}
+
+/* Glass Card (Interactive) */
+.glass-card {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 16px;
+    padding: var(--space-6);
+    transition: transform var(--duration-normal) var(--ease-smooth),
+        background-color var(--duration-normal) var(--ease-smooth),
+        border-color var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth);
+    cursor: pointer;
+    will-change: transform;
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-strong);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2),
+        0 0 15px rgba(0, 240, 255, 0.1);
+    /* Subtle primary glow */
+}
+
+/* Glass Button */
+.glass-button {
+    background: rgba(255, 255, 255, 0.05);
+    /* Very subtle fill */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--glass-border-medium);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--space-3) var(--space-6);
+    border-radius: 9999px;
+    /* Pill shape */
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-smooth);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: var(--font-size-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.glass-button:hover {
+    background: rgba(0, 240, 255, 0.1);
+    /* Tint with primary color */
+    border-color: var(--color-primary);
+    color: #fff;
+    text-shadow: 0 0 8px var(--color-primary);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.glass-button:active {
+    transform: scale(0.98);
+}
+
+.glass-button:focus-visible {
+    box-shadow: 0 0 0 2px var(--bg-gradient-start), 0 0 0 4px var(--color-primary);
+}
+
+/* Glass Input */
+.glass-input {
+    background: var(--glass-bg-subtle);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 8px;
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-main);
+    font-size: var(--font-size-md);
+    width: 100%;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.glass-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.glass-input:focus {
+    background: var(--glass-bg-medium);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary), 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+/* =========================================
+   4. Bento Grid System
+   ========================================= */
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    padding: var(--space-4);
+    /* auto-rows can be useful, but sometimes explicit heights are better for bento */
+    grid-auto-rows: minmax(200px, auto);
+}
+
+.bento-span-2 {
+    grid-column: span 2;
+}
+
+.bento-span-3 {
+    grid-column: span 3;
+}
+
+.bento-span-row-2 {
+    grid-row: span 2;
+}
+
+/* Responsive adjustments for bento grid */
+@media (max-width: 768px) {
+
+    .bento-span-2,
+    .bento-span-3 {
+        grid-column: span 1;
+    }
+}
+
+/* =========================================
+   5. Utility Classes
+   ========================================= */
+
+/* Flexbox */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-gap-2 {
+    gap: var(--space-2);
+}
+
+.flex-gap-4 {
+    gap: var(--space-4);
+}
+
+/* Typography */
+.text-primary {
+    color: var(--color-primary);
+}
+
+.text-secondary {
+    color: var(--color-secondary);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.text-danger {
+    color: var(--color-danger);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-gradient {
+    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+.font-bold {
+    font-weight: var(--font-weight-bold);
+}
+
+.font-xl {
+    font-size: var(--font-size-xl);
+}
+
+.font-2xl {
+    font-size: var(--font-size-2xl);
+}
+
+/* Spacing */
+.p-4 {
+    padding: var(--space-4);
+}
+
+.p-6 {
+    padding: var(--space-6);
+}
+
+.p-8 {
+    padding: var(--space-8);
+}
+
+.m-4 {
+    margin: var(--space-4);
+}
+
+.mt-4 {
+    margin-top: var(--space-4);
+}
+
+.mb-4 {
+    margin-bottom: var(--space-4);
+}
+
+/* State transitions */
+.transition-smooth {
+    transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+/* =========================================
+   6. Animations
+   ========================================= */
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 5px rgba(0, 240, 255, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(0, 240, 255, 0.2);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-glow {
+    animation: glow 2s infinite ease-in-out;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.5s var(--ease-smooth) forwards;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s var(--ease-smooth) forwards;
+}
+
+/* Stagger delays manually or via JS if needed */
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+/* =========================================
+   7. Accessibility
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
