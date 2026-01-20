@@ -47,6 +47,7 @@ export interface Database {
                     status: 'pending' | 'active' | 'completed'
                     created_at: string
                     completed_at: string | null
+                    deleted_at: string | null
                 }
                 Insert: {
                     id?: string
