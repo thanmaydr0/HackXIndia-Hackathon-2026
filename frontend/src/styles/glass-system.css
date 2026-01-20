@@ -458,3 +458,74 @@ body {
         scroll-behavior: auto !important;
     }
 }
+
+/* =========================================
+   8. Cyberpunk Glitch & RPG Effects
+   ========================================= */
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+        text-shadow: none;
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px 2px var(--color-danger), -2px -2px var(--color-primary);
+    }
+
+    40% {
+        transform: translate(2px, -2px);
+        text-shadow: -2px 2px var(--color-danger), 2px -2px var(--color-primary);
+    }
+
+    60% {
+        transform: translate(-2px, 2px);
+        text-shadow: 2px 2px var(--color-danger), -2px -2px var(--color-primary);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+        text-shadow: -2px 2px var(--color-danger), 2px -2px var(--color-primary);
+    }
+
+    100% {
+        transform: translate(0);
+        text-shadow: none;
+    }
+}
+
+.glitch-effect {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-effect:hover {
+    animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+.rpg-stat-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.rpg-stat-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.2) 50%,
+            transparent 100%);
+    transform: translateX(-100%);
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    100% {
+        transform: translateX(100%);
+    }
+}

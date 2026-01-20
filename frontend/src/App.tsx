@@ -1,41 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from '@/features/auth/AuthContext'
-import Login from '@/features/auth/Login'
-import ProtectedRoute from '@/features/auth/ProtectedRoute'
-import Dashboard from '@/features/dashboard/Dashboard'
-import TaskManager from '@/features/tasks/TaskManager'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './features/auth/AuthContext'
+import DashboardLayout from './components/layout/DashboardLayout'
+import ProtectedRoute from './features/auth/ProtectedRoute'
+import LoginPage from './pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
+import TasksPage from './pages/TasksPage'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Dashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <TaskManager />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          {/* Add more routes here wrapped in DashboardLayout as needed */}
+          <Route path="/login" element={<LoginPage />} />
+
+          <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

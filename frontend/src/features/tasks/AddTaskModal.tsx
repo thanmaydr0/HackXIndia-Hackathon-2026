@@ -1,4 +1,18 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { Bot, Flame } from 'lucide-react'
 
 interface AddTaskModalProps {
     isOpen: boolean
@@ -9,17 +23,17 @@ interface AddTaskModalProps {
 export default function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalProps) {
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
-    const [difficulty, setDifficulty] = useState(5)
+    const [difficulty, setDifficulty] = useState([5]) // Slider expects array
     const [isLoading, setIsLoading] = useState(false)
-    const inputRef = useRef<HTMLInputElement>(null)
 
+    // Reset form when opening
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus()
+        if (isOpen) {
+            setTitle('')
+            setDescription('')
+            setDifficulty([5])
         }
     }, [isOpen])
-
-    if (!isOpen) return null
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -27,10 +41,7 @@ export default function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalPro
 
         try {
             setIsLoading(true)
-            await onAdd(title, description, difficulty)
-            setTitle('')
-            setDescription('')
-            setDifficulty(5)
+            await onAdd(title, description, difficulty[0])
             onClose()
         } catch (error) {
             console.error(error)
@@ -40,80 +51,90 @@ export default function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalPro
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex-center bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="glass-panel p-6 w-full max-w-md animate-slide-in">
-                <h2 className="font-xl font-bold text-gradient mb-6">New Mission</h2>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="sm:max-w-md border-primary/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-black/80 backdrop-blur-xl">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl glitch-effect" data-text="New Mission">New Mission</DialogTitle>
+                    <DialogDescription className="font-mono text-xs uppercase tracking-widest text-primary/60">
+                        Initialize New Protocol
+                    </DialogDescription>
+                </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="flex-column gap-6">
-                    <div>
-                        <label className="text-sm text-muted block mb-2">Title</label>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            className="glass-input"
+                <form onSubmit={handleSubmit} className="space-y-6 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="title" className="text-muted-foreground">Title</Label>
+                        <Input
+                            id="title"
                             placeholder="e.g. Hack the Mainframe"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             required
+                            className="bg-secondary/10 border-white/10 focus-visible:ring-primary/50"
+                            autoFocus
                         />
                     </div>
 
-                    <div>
-                        <label className="text-sm text-muted block mb-2">Description</label>
-                        <textarea
-                            className="glass-input min-h-[100px] resize-none"
+                    <div className="space-y-2">
+                        <Label htmlFor="description" className="text-muted-foreground">Description</Label>
+                        <Textarea
+                            id="description"
                             placeholder="Protocol parameters..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
+                            className="bg-secondary/10 border-white/10 min-h-[100px] resize-none focus-visible:ring-primary/50"
                         />
                     </div>
 
-                    <div>
-                        <div className="flex-between mb-2">
-                            <label className="text-sm text-muted">Difficulty Level</label>
-                            <span className={`text-xs font-bold ${difficulty > 7 ? 'text-[--color-danger]' : difficulty > 4 ? 'text-[--color-warning]' : 'text-[--color-success]'}`}>
-                                {difficulty}/10
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <Label className="text-muted-foreground">Difficulty Level</Label>
+                            <span className={`text-xs font-bold px-2 py-1 rounded bg-secondary/20 ${difficulty[0] > 7 ? 'text-destructive' : difficulty[0] > 4 ? 'text-warning' : 'text-success'
+                                }`}>
+                                {difficulty[0]}/10
                             </span>
                         </div>
-                        <input
-                            type="range"
-                            min="1"
-                            max="10"
-                            step="1"
-                            className="w-full accent-[--color-primary] cursor-pointer"
+                        <Slider
                             value={difficulty}
-                            onChange={(e) => setDifficulty(parseInt(e.target.value))}
+                            onValueChange={setDifficulty}
+                            max={10}
+                            step={1}
+                            className="py-2"
                         />
-                        <div className="flex-between text-xs text-muted mt-1 px-1">
-                            <span>Easy</span>
-                            <span>Hard</span>
+                        <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-mono uppercase">
+                            <span>Trivia</span>
+                            <span>Nightmare</span>
                         </div>
                     </div>
 
                     {/* AI Suggestion Mock */}
-                    <div className="glass-panel--subtle p-3 flex gap-2 items-start text-xs text-[--color-primary]">
-                        <span>🤖</span>
-                        <p>Based on current system load (Optimized), you have capacity for a high-difficulty task.</p>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                        <Bot className="w-5 h-5 text-primary mt-0.5" />
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            <span className="text-primary font-bold block mb-1">AI Recommendation:</span>
+                            Based on current system load (Optimized), you have capacity for a high-difficulty task.
+                        </p>
                     </div>
 
-                    <div className="flex gap-4 mt-2">
-                        <button
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={onClose}
-                            className="glass-button flex-1 border-transparent hover:bg-white/5 text-muted hover:text-white"
+                            disabled={isLoading}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
+                            variant="neon"
                             disabled={isLoading}
-                            className="glass-button flex-1 bg-[--color-primary]/20 border-[--color-primary] hover:bg-[--color-primary]/30"
+                            className="w-full sm:w-auto"
                         >
                             {isLoading ? 'Processing...' : 'Initialize Task'}
-                        </button>
-                    </div>
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     )
 }

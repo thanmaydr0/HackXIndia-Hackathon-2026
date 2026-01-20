@@ -104,31 +104,31 @@ export default function SystemMonitor() {
     const loadStatus = getLoadStatus(latest?.cognitive_load || 0)
 
     return (
-        <div className="glass-panel p-6 animate-fade-in flex-column gap-6">
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm glass-panel p-6 animate-fade-in flex flex-col gap-6">
             {/* Header / Stats */}
-            <div className="flex-between flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="font-xl font-bold text-gradient flex items-center gap-2">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
                         <span className="text-2xl">📈</span> System Monitor
                     </h2>
-                    <div className="flex-center gap-2 mt-2">
-                        <span className={`text-xs p-1 px-3 rounded-full border font-mono ${loadStatus.color} bg-[--glass-bg-subtle]`} style={{ borderColor: loadStatus.border }}>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className={`text-xs p-1 px-3 rounded-full border font-mono ${loadStatus.color} bg-background`} style={{ borderColor: loadStatus.border }}>
                             {loadStatus.text}
                         </span>
-                        <span className="text-muted text-xs font-mono">
+                        <span className="text-muted-foreground text-xs font-mono">
                             UPDATED: {latest ? format(new Date(latest.time * 1000), 'HH:mm:ss') : '--:--:--'}
                         </span>
                     </div>
                 </div>
 
-                <div className="flex-center gap-8">
+                <div className="flex items-center gap-8 w-full sm:w-auto justify-end">
                     {/* Visual Gauge for Cognitive Load */}
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-2 mb-1">
-                            <span className="text-muted text-xs font-mono">COGNITIVE LOAD</span>
+                            <span className="text-muted-foreground text-xs font-mono">COGNITIVE LOAD</span>
                             <span className={`font-bold ${loadStatus.color}`}>{latest?.cognitive_load ?? '--'}%</span>
                         </div>
-                        <div className="w-32 h-2 bg-[--glass-bg-intense] rounded-full overflow-hidden">
+                        <div className="w-32 h-2 bg-secondary/20 rounded-full overflow-hidden">
                             <div
                                 className="h-full transition-all duration-500 ease-out"
                                 style={{
@@ -143,12 +143,12 @@ export default function SystemMonitor() {
                     {/* Visual Gauge for Energy */}
                     <div className="text-right">
                         <div className="flex items-center justify-end gap-2 mb-1">
-                            <span className="text-muted text-xs font-mono">ENERGY</span>
-                            <span className="font-bold text-[--color-success]">{latest?.energy_level ?? '--'}%</span>
+                            <span className="text-muted-foreground text-xs font-mono">ENERGY</span>
+                            <span className="font-bold text-success">{latest?.energy_level ?? '--'}%</span>
                         </div>
-                        <div className="w-32 h-2 bg-[--glass-bg-intense] rounded-full overflow-hidden">
+                        <div className="w-32 h-2 bg-secondary/20 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-[--color-success] transition-all duration-500 ease-out"
+                                className="h-full bg-success transition-all duration-500 ease-out"
                                 style={{
                                     width: `${latest?.energy_level ?? 0}%`,
                                     boxShadow: '0 0 10px var(--color-success)'
@@ -159,7 +159,7 @@ export default function SystemMonitor() {
 
                     <button
                         onClick={refresh}
-                        className="glass-button p-2 rounded-full hover:rotate-180 transition-transform duration-500"
+                        className="p-2 rounded-full hover:bg-background/50 hover:rotate-180 transition-all border border-transparent hover:border-primary/50"
                         title="Refresh Data"
                     >
                         ↻
@@ -168,10 +168,10 @@ export default function SystemMonitor() {
             </div>
 
             {/* Chart Container */}
-            <div className="relative w-full" style={{ minHeight: '300px' }}>
+            <div className="relative w-full rounded-lg overflow-hidden bg-black/20" style={{ minHeight: '300px' }}>
                 {status === 'disconnected' && (
-                    <div className="absolute top-0 left-0 w-full flex-center bg-glass-subtle z-10 p-2">
-                        <span className="text-danger text-xs">⚠ Realtime Disconnected</span>
+                    <div className="absolute top-0 left-0 w-full flex items-center justify-center bg-background/80 z-10 p-2">
+                        <span className="text-destructive text-xs">⚠ Realtime Disconnected</span>
                     </div>
                 )}
                 {/* CSS Module or custom styles needed for uPlot dark theme adaptations if defaults aren't enough */}
@@ -179,12 +179,12 @@ export default function SystemMonitor() {
             </div>
 
             {/* Accessibility Table */}
-            <details className="text-xs text-muted">
-                <summary className="cursor-pointer mb-2">Show Data Table (Accessibility)</summary>
-                <div className="overflow-auto max-h-40">
+            <details className="text-xs text-muted-foreground">
+                <summary className="cursor-pointer mb-2 hover:text-primary transition-colors">Show Data Table (Accessibility)</summary>
+                <div className="overflow-auto max-h-40 border rounded-md">
                     <table className="w-full text-left">
                         <thead>
-                            <tr>
+                            <tr className="bg-muted/50">
                                 <th className="p-2">Time</th>
                                 <th className="p-2">Load</th>
                                 <th className="p-2">Energy</th>
@@ -192,7 +192,7 @@ export default function SystemMonitor() {
                         </thead>
                         <tbody>
                             {data.map((Row, i) => (
-                                <tr key={i} className="border-b border-white/10">
+                                <tr key={i} className="border-b border-border/50">
                                     <td className="p-2">{format(new Date(Row.time * 1000), 'HH:mm:ss')}</td>
                                     <td className="p-2">{Row.cognitive_load}%</td>
                                     <td className="p-2">{Row.energy_level}%</td>
