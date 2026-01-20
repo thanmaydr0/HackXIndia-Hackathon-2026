@@ -351,6 +351,26 @@ body {
     margin-bottom: var(--space-4);
 }
 
+.w-full {
+    width: 100%;
+}
+
+.block {
+    display: block;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-xs {
+    font-size: var(--font-size-xs);
+}
+
+.font-lg {
+    font-size: var(--font-size-lg);
+}
+
 /* State transitions */
 .transition-smooth {
     transition: all var(--duration-normal) var(--ease-smooth);
