@@ -4,27 +4,33 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[5px] text-[13px] font-medium transition-all duration-[120ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(196,155,58,0.4)] disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             variant: {
-                default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(0,240,255,0.5)]",
-                destructive:
-                    "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-[0_0_10px_rgba(255,0,110,0.5)]",
-                outline:
-                    "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-primary/50",
-                secondary:
-                    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
-                link: "text-primary underline-offset-4 hover:underline",
-                glass: "bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-primary/50 text-foreground",
-                neon: "bg-transparent border border-primary text-primary shadow-[0_0_5px_var(--primary)] hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_20px_var(--primary)] transition-all duration-300",
+                // Primary - Only button with accent color
+                default: "bg-[#C49B3A] text-[#0F1113] hover:bg-[#D4A844]",
+
+                // Destructive - Muted red
+                destructive: "bg-[#B85450] text-[#E8E6E3] hover:bg-[#C45E5A]",
+
+                // Outline - Subtle border
+                outline: "border border-[rgba(255,255,255,0.08)] bg-transparent text-[#E8E6E3] hover:bg-[#292E33] hover:border-[rgba(255,255,255,0.12)]",
+
+                // Secondary - Subtle background
+                secondary: "bg-[#22262A] text-[#E8E6E3] border border-[rgba(255,255,255,0.08)] hover:bg-[#292E33]",
+
+                // Ghost - Most minimal
+                ghost: "text-[#9A9996] hover:bg-[#292E33] hover:text-[#E8E6E3]",
+
+                // Link - Text only
+                link: "text-[#C49B3A] underline-offset-4 hover:text-[#D4A844] hover:underline",
             },
             size: {
-                default: "h-10 px-4 py-2",
-                sm: "h-9 rounded-md px-3",
-                lg: "h-11 rounded-md px-8",
-                icon: "h-10 w-10",
+                default: "h-9 px-4 py-2",
+                sm: "h-8 px-3 text-[12px]",
+                lg: "h-10 px-5",
+                icon: "h-9 w-9 p-0",
             },
         },
         defaultVariants: {

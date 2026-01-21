@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react'
 import { useTaskOperations } from './useTaskOperations'
+import { useTaskAdvisor } from './useTaskAdvisor'
 import TaskCard from './TaskCard'
 import AddTaskModal from './AddTaskModal'
-import { Plus, ListFilter } from 'lucide-react'
+import MacWindow from '@/components/ui/MacWindow'
+import { Plus, ListTodo, CheckCircle, Clock, AlertCircle, Sparkles, RefreshCw } from 'lucide-react'
 
 export default function TaskManager() {
     const { tasks, loading, error, addTask, updateStatus, deleteTask } = useTaskOperations()
+    const { recommendation, isLoading: aiLoading, refresh: refreshAI } = useTaskAdvisor()
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [filter, setFilter] = useState<'all' | 'pending' | 'active' | 'completed'>('all')
 
     const { activeTasks, pendingTasks, completedTasks } = useMemo(() => {
         return {
@@ -17,120 +19,143 @@ export default function TaskManager() {
         }
     }, [tasks])
 
-    if (loading) return <div className="p-8 flex-center h-full"><span className="animate-spin text-[--color-primary] text-4xl">⟳</span></div>
-    if (error) return <div className="p-8 text-[--color-danger] flex-center h-full">System Glitch: Protocol Failed</div>
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-64 text-red-400">
+                <AlertCircle className="w-5 h-5 mr-2" />
+                System Error: {error}
+            </div>
+        )
+    }
 
     return (
-        <div className="animate-fade-in relative h-full flex flex-col">
+        <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex-between mb-8 items-end">
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="font-2xl font-bold text-gradient mb-2">Protocol Manager</h1>
-                    <p className="text-muted">Manage your objectives and cognitive resources.</p>
+                    <h1 className="text-2xl font-semibold text-white">Tasks</h1>
+                    <p className="text-white/50 text-sm mt-1">Manage your objectives and priorities</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="glass-button bg-[--color-primary]/10 border-[--color-primary] text-[--color-primary]"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
                 >
-                    <Plus size={18} /> New Objective
+                    <Plus className="w-4 h-4" />
+                    New Task
                 </button>
             </div>
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
-
-                {/* Left Panel: Active & High Priority (8 cols) */}
-                <div className="lg:col-span-8 flex flex-col gap-6 overflow-hidden">
-                    <div className="glass-panel p-6 flex-1 flex flex-col min-h-[400px]">
-                        <div className="flex-between mb-4">
-                            <h2 className="font-xl font-bold text-[--color-secondary] flex items-center gap-2">
-                                <span className="animate-pulse">⚡</span> Active Protocols
-                            </h2>
-                            <span className="text-xs text-muted font-mono">{activeTasks.length} RUNNING</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2 custom-scrollbar">
-                            {activeTasks.length === 0 ? (
-                                <div className="col-span-full flex-center flex-col py-12 text-muted border border-dashed border-white/10 rounded-xl">
-                                    <p>No active protocols.</p>
-                                    <button onClick={() => setIsModalOpen(true)} className="text-[--color-primary] text-sm mt-2 hover:underline">Start a new task</button>
-                                </div>
-                            ) : (
-                                activeTasks.map(task => (
-                                    <TaskCard
-                                        key={task.id}
-                                        task={task}
-                                        onStatusChange={updateStatus}
-                                        onDelete={deleteTask}
-                                    />
-                                ))
-                            )}
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-4">
+                {[
+                    { label: 'Active', count: activeTasks.length, icon: Clock, color: 'from-yellow-500 to-orange-500' },
+                    { label: 'Pending', count: pendingTasks.length, icon: AlertCircle, color: 'from-blue-500 to-cyan-500' },
+                    { label: 'Completed', count: completedTasks.length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
+                ].map((stat) => (
+                    <div key={stat.label} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                                <stat.icon className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <p className="text-2xl font-bold text-white">{stat.count}</p>
+                                <p className="text-xs text-white/50">{stat.label}</p>
+                            </div>
                         </div>
                     </div>
-
-                    {/* Pending Queue (Horizontal Scroll) */}
-                    <div className="glass-panel p-4">
-                        <h3 className="text-sm text-muted font-bold mb-3 uppercase tracking-wider">Pending Queue</h3>
-                        <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
-                            {pendingTasks.map(task => (
-                                <div key={task.id} className="min-w-[280px]">
-                                    <TaskCard
-                                        task={task}
-                                        onStatusChange={updateStatus}
-                                        onDelete={deleteTask}
-                                    />
-                                </div>
-                            ))}
-                            {pendingTasks.length === 0 && <span className="text-muted text-xs italic py-2">Queue empty. System idle.</span>}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Panel: Side Queue & Completed (4 cols) */}
-                <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-hidden">
-                    {/* System Recommendations (Bento-style card) */}
-                    <div className="glass-card bg-gradient-to-br from-[--glass-bg-subtle] to-[--glass-bg-medium]">
-                        <h3 className="font-bold flex items-center gap-2 mb-2">
-                            <span>🧠</span> AI Recommendation
-                        </h3>
-                        <p className="text-sm text-muted">
-                            Based on your recent 90% focus score, tackle a <strong>High Difficulty</strong> task next.
-                        </p>
-                    </div>
-
-                    {/* Completed Log */}
-                    <div className="glass-panel p-4 flex-1 flex flex-col overflow-hidden">
-                        <div className="flex-between mb-4">
-                            <h3 className="font-bold text-[--color-success]">Completed Log</h3>
-                            <button className="text-xs text-muted hover:text-white" title="Filter"><ListFilter size={14} /></button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                            {completedTasks.map(task => (
-                                <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg bg-[--glass-bg-subtle] border border-[--glass-border-subtle] opacity-70 hover:opacity-100 transition-opacity">
-                                    <div className="mt-1 text-[--color-success]"><CheckCircleIcon /></div>
-                                    <div>
-                                        <p className="line-through text-sm text-muted">{task.title}</p>
-                                        <p className="text-[10px] text-muted">{new Date(task.completed_at || '').toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                            ))}
-                            {completedTasks.length === 0 && <p className="text-center text-xs text-muted py-4">No completed tasks yet.</p>}
-                        </div>
-                    </div>
-                </div>
+                ))}
             </div>
 
-            <AddTaskModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onAdd={addTask}
-            />
-        </div>
-    )
-}
+            {/* AI Recommendations */}
+            {recommendation && (
+                <MacWindow title="AI Suggestions" icon={<Sparkles className="w-4 h-4" />}>
+                    <div className="p-4 flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
+                            <Sparkles className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-white/90 text-sm">{typeof recommendation === 'string' ? recommendation : recommendation?.recommendation}</p>
+                            {typeof recommendation !== 'string' && recommendation?.reason && (
+                                <p className="text-xs text-white/50 mt-1">{recommendation.reason}</p>
+                            )}
+                        </div>
+                        <button onClick={refreshAI} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                            <RefreshCw className={`w-4 h-4 text-white/60 ${aiLoading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
+                </MacWindow>
+            )
+            }
 
-function CheckCircleIcon() {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Active Tasks */}
+                <MacWindow title="Active" icon={<Clock className="w-4 h-4" />}>
+                    <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {activeTasks.length === 0 ? (
+                            <div className="text-center py-8 text-white/40">
+                                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No active tasks</p>
+                            </div>
+                        ) : (
+                            activeTasks.map(task => (
+                                <TaskCard key={task.id} task={task} onStatusChange={updateStatus} onDelete={deleteTask} />
+                            ))
+                        )}
+                    </div>
+                </MacWindow>
+
+                {/* Pending Tasks */}
+                <MacWindow title="Pending" icon={<AlertCircle className="w-4 h-4" />}>
+                    <div className="p-4 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {pendingTasks.length === 0 ? (
+                            <div className="text-center py-8 text-white/40">
+                                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No pending tasks</p>
+                                <button onClick={() => setIsModalOpen(true)} className="text-blue-400 text-sm mt-2 hover:underline">
+                                    Create one
+                                </button>
+                            </div>
+                        ) : (
+                            pendingTasks.map(task => (
+                                <TaskCard key={task.id} task={task} onStatusChange={updateStatus} onDelete={deleteTask} />
+                            ))
+                        )}
+                    </div>
+                </MacWindow>
+            </div>
+
+            {/* Completed Tasks */}
+            <MacWindow title="Completed" icon={<CheckCircle className="w-4 h-4" />}>
+                <div className="p-4 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    {completedTasks.length === 0 ? (
+                        <div className="text-center py-6 text-white/40">
+                            <CheckCircle className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">Complete some tasks to see them here</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {completedTasks.slice(0, 9).map(task => (
+                                <div key={task.id} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg text-white/60 text-sm">
+                                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                                    <span className="truncate">{task.title}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </MacWindow>
+
+            {/* Add Task Modal */}
+            <AddTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addTask} />
+        </div >
     )
 }

@@ -4,12 +4,25 @@ import 'uplot/dist/uPlot.min.css'
 import { useRealtimeStats } from './useRealtimeStats'
 import { format } from 'date-fns'
 
+/**
+ * System Monitor - Professional Diagnostic Tool
+ * 
+ * Style:
+ * - Dark background
+ * - Thin, elegant charts
+ * - Muted colors
+ * - Neutral grey for baseline
+ * - Muted yellow only for critical states
+ * 
+ * Looks like something Apple engineers would use internally.
+ */
+
 export default function SystemMonitor() {
     const { data, status, latest, refresh } = useRealtimeStats()
     const chartRef = useRef<HTMLDivElement>(null)
     const uplotInst = useRef<uPlot | null>(null)
 
-    // Prepare data arrays for uPlot [time[], series1[], series2[]]
+    // Prepare data for uPlot
     const plotData = useMemo(() => {
         const times: number[] = []
         const loads: number[] = []
@@ -29,63 +42,81 @@ export default function SystemMonitor() {
         if (!chartRef.current) return
 
         if (!uplotInst.current) {
-            // Init uPlot
             const opts: uPlot.Options = {
-                title: "Real-time System Monitor",
                 width: chartRef.current.clientWidth,
-                height: 300,
+                height: 220,
+                padding: [16, 12, 0, 0],
+                cursor: {
+                    show: true,
+                    points: {
+                        show: true,
+                        size: 6,
+                        stroke: '#6B6966',
+                        fill: '#1A1D20'
+                    }
+                },
                 series: [
                     {},
                     {
-                        label: "Cog. Load",
-                        stroke: "#ff006e",
-                        width: 2,
-                        fill: "rgba(255, 0, 110, 0.1)",
+                        label: "Cognitive Load",
+                        stroke: "#6B6966",  // Neutral grey baseline
+                        width: 1.5,
+                        fill: "rgba(107, 105, 102, 0.04)",
                     },
                     {
                         label: "Energy",
-                        stroke: "#06ffa5",
-                        width: 2,
-                        fill: "rgba(6, 255, 165, 0.1)",
+                        stroke: "#5A9A5A",  // Muted green
+                        width: 1.5,
+                        fill: "rgba(90, 154, 90, 0.04)",
                     }
                 ],
                 axes: [
                     {
-                        stroke: "#fff",
-                        grid: { stroke: "rgba(255,255,255,0.1)" },
+                        stroke: "#4A4845",
+                        font: "11px Inter, sans-serif",
+                        grid: {
+                            stroke: "rgba(255,255,255,0.03)",
+                            width: 1
+                        },
+                        ticks: {
+                            stroke: "rgba(255,255,255,0.06)",
+                            width: 1,
+                            size: 4
+                        }
                     },
                     {
-                        stroke: "#fff",
-                        grid: { stroke: "rgba(255,255,255,0.1)" },
+                        stroke: "#4A4845",
+                        font: "11px Inter, sans-serif",
+                        grid: {
+                            stroke: "rgba(255,255,255,0.03)",
+                            width: 1
+                        },
+                        ticks: {
+                            stroke: "rgba(255,255,255,0.06)",
+                            width: 1,
+                            size: 4
+                        },
+                        side: 1,
                     }
                 ],
                 scales: {
-                    x: {
-                        time: true,
-                    },
-                    y: {
-                        auto: false,
-                        range: [0, 100],
-                    }
+                    x: { time: true },
+                    y: { auto: false, range: [0, 100] }
                 },
-                legend: {
-                    show: true
-                }
+                legend: { show: false }
             }
 
             uplotInst.current = new uPlot(opts, plotData, chartRef.current)
         } else {
-            // Update data efficienty
             uplotInst.current.setData(plotData)
         }
 
-        // Resize handler
         const resizeObserver = new ResizeObserver(entries => {
             if (!uplotInst.current) return
             for (let entry of entries) {
                 uplotInst.current.setSize({
                     width: entry.contentRect.width,
-                    height: 300
+                    height: 220
                 })
             }
         })
@@ -94,120 +125,125 @@ export default function SystemMonitor() {
         return () => resizeObserver.disconnect()
     }, [plotData])
 
-    // Status Badge Logic
+    // Status - uses muted yellow only for critical
     const getLoadStatus = (val: number) => {
-        if (val > 90) return { text: 'CRITICAL', color: 'text-danger', border: 'var(--color-danger)' }
-        if (val > 70) return { text: 'HIGH', color: 'text-warning', border: 'var(--color-warning)' }
-        return { text: 'OPTIMAL', color: 'text-success', border: 'var(--color-success)' }
+        if (val > 90) return { text: 'CRITICAL', color: '#C49B3A', bg: 'rgba(196,155,58,0.08)' }
+        if (val > 70) return { text: 'HIGH', color: '#9A9996', bg: 'rgba(255,255,255,0.04)' }
+        return { text: 'NOMINAL', color: '#5A9A5A', bg: 'rgba(90,154,90,0.06)' }
     }
 
     const loadStatus = getLoadStatus(latest?.cognitive_load || 0)
 
     return (
-        <div className="rounded-xl border bg-card text-card-foreground shadow-sm glass-panel p-6 animate-fade-in flex flex-col gap-6">
-            {/* Header / Stats */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-5">
+            {/* Header - Minimal, diagnostic style */}
+            <div className="flex items-start justify-between">
                 <div>
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        <span className="text-2xl">📈</span> System Monitor
-                    </h2>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className={`text-xs p-1 px-3 rounded-full border font-mono ${loadStatus.color} bg-background`} style={{ borderColor: loadStatus.border }}>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-[13px] font-medium text-[#E8E6E3]">System Diagnostics</h3>
+                        <span
+                            className="text-[10px] font-medium px-2 py-0.5 rounded-sm"
+                            style={{
+                                color: loadStatus.color,
+                                background: loadStatus.bg,
+                            }}
+                        >
                             {loadStatus.text}
                         </span>
-                        <span className="text-muted-foreground text-xs font-mono">
-                            UPDATED: {latest ? format(new Date(latest.time * 1000), 'HH:mm:ss') : '--:--:--'}
+                    </div>
+                    <p className="text-[11px] text-[#4A4845] mt-1 font-mono">
+                        {latest ? format(new Date(latest.time * 1000), 'HH:mm:ss') : '--:--:--'} UTC
+                    </p>
+                </div>
+
+                <button
+                    onClick={refresh}
+                    className="text-[#6B6966] hover:text-[#9A9996] p-1.5 rounded hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+                    title="Refresh"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M23 4v6h-6M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Metrics Row */}
+            <div className="grid grid-cols-2 gap-4">
+                {/* Cognitive Load */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-[#6B6966] uppercase tracking-wide">CPU Load</span>
+                        <span
+                            className="text-[15px] font-semibold tabular-nums"
+                            style={{
+                                color: (latest?.cognitive_load ?? 0) > 90 ? '#C49B3A' : '#9A9996'
+                            }}
+                        >
+                            {latest?.cognitive_load ?? 0}%
                         </span>
                     </div>
+                    <div className="h-[3px] bg-[rgba(255,255,255,0.04)] rounded-full overflow-hidden">
+                        <div
+                            className="h-full transition-all duration-500 ease-out rounded-full"
+                            style={{
+                                width: `${latest?.cognitive_load ?? 0}%`,
+                                background: (latest?.cognitive_load ?? 0) > 90 ? '#C49B3A' : '#6B6966'
+                            }}
+                        />
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-8 w-full sm:w-auto justify-end">
-                    {/* Visual Gauge for Cognitive Load */}
-                    <div className="text-right">
-                        <div className="flex items-center justify-end gap-2 mb-1">
-                            <span className="text-muted-foreground text-xs font-mono">COGNITIVE LOAD</span>
-                            <span className={`font-bold ${loadStatus.color}`}>{latest?.cognitive_load ?? '--'}%</span>
-                        </div>
-                        <div className="w-32 h-2 bg-secondary/20 rounded-full overflow-hidden">
-                            <div
-                                className="h-full transition-all duration-500 ease-out"
-                                style={{
-                                    width: `${latest?.cognitive_load ?? 0}%`,
-                                    backgroundColor: loadStatus.border,
-                                    boxShadow: `0 0 10px ${loadStatus.border}`
-                                }}
-                            />
-                        </div>
+                {/* Energy */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-[#6B6966] uppercase tracking-wide">Energy</span>
+                        <span className="text-[15px] font-semibold text-[#9A9996] tabular-nums">
+                            {latest?.energy_level ?? 0}%
+                        </span>
                     </div>
-
-                    {/* Visual Gauge for Energy */}
-                    <div className="text-right">
-                        <div className="flex items-center justify-end gap-2 mb-1">
-                            <span className="text-muted-foreground text-xs font-mono">ENERGY</span>
-                            <span className="font-bold text-success">{latest?.energy_level ?? '--'}%</span>
-                        </div>
-                        <div className="w-32 h-2 bg-secondary/20 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-success transition-all duration-500 ease-out"
-                                style={{
-                                    width: `${latest?.energy_level ?? 0}%`,
-                                    boxShadow: '0 0 10px var(--color-success)'
-                                }}
-                            />
-                        </div>
+                    <div className="h-[3px] bg-[rgba(255,255,255,0.04)] rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-[#5A9A5A] transition-all duration-500 ease-out rounded-full"
+                            style={{ width: `${latest?.energy_level ?? 0}%` }}
+                        />
                     </div>
-
-                    <button
-                        onClick={refresh}
-                        className="p-2 rounded-full hover:bg-background/50 hover:rotate-180 transition-all border border-transparent hover:border-primary/50"
-                        title="Refresh Data"
-                    >
-                        ↻
-                    </button>
                 </div>
             </div>
 
-            {/* Chart Container */}
-            <div className="relative w-full rounded-lg overflow-hidden bg-black/20" style={{ minHeight: '300px' }}>
+            {/* Chart - Dark, thin, elegant */}
+            <div className="relative rounded-lg overflow-hidden bg-[#0F1113] border border-[rgba(255,255,255,0.04)]">
                 {status === 'disconnected' && (
-                    <div className="absolute top-0 left-0 w-full flex items-center justify-center bg-background/80 z-10 p-2">
-                        <span className="text-destructive text-xs">⚠ Realtime Disconnected</span>
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded bg-[rgba(184,84,80,0.1)] z-10">
+                        <span className="w-1.5 h-1.5 bg-[#B85450] rounded-full" />
+                        <span className="text-[10px] text-[#B85450]">Disconnected</span>
                     </div>
                 )}
-                {/* CSS Module or custom styles needed for uPlot dark theme adaptations if defaults aren't enough */}
-                <div ref={chartRef} className="uplot-chart-dark" />
+                <div ref={chartRef} className="system-monitor-chart" />
             </div>
 
-            {/* Accessibility Table */}
-            <details className="text-xs text-muted-foreground">
-                <summary className="cursor-pointer mb-2 hover:text-primary transition-colors">Show Data Table (Accessibility)</summary>
-                <div className="overflow-auto max-h-40 border rounded-md">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-muted/50">
-                                <th className="p-2">Time</th>
-                                <th className="p-2">Load</th>
-                                <th className="p-2">Energy</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((Row, i) => (
-                                <tr key={i} className="border-b border-border/50">
-                                    <td className="p-2">{format(new Date(Row.time * 1000), 'HH:mm:ss')}</td>
-                                    <td className="p-2">{Row.cognitive_load}%</td>
-                                    <td className="p-2">{Row.energy_level}%</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {/* Legend - Minimal */}
+            <div className="flex items-center gap-6 text-[11px]">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-[2px] bg-[#6B6966] rounded-full" />
+                    <span className="text-[#6B6966]">Cognitive Load</span>
                 </div>
-            </details>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-[2px] bg-[#5A9A5A] rounded-full" />
+                    <span className="text-[#6B6966]">Energy Level</span>
+                </div>
+            </div>
 
-            {/* Quick override style for uPlot textual elements to be white */}
+            {/* uPlot dark theme styles */}
             <style>{`
-                .uplot-chart-dark .u-legend { color: #fff; }
-                .uplot-chart-dark .u-title { fill: #fff; }
-                .uplot-chart-dark .u-value { color: #eee; }
+                .system-monitor-chart .u-legend { display: none; }
+                .system-monitor-chart .u-title { display: none; }
+                .system-monitor-chart .u-wrap { background: transparent; }
+                .system-monitor-chart .u-select { background: rgba(196, 155, 58, 0.08); }
+                .system-monitor-chart .u-cursor-x,
+                .system-monitor-chart .u-cursor-y {
+                    border-color: rgba(255,255,255,0.08) !important;
+                }
             `}</style>
         </div>
     )

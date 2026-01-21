@@ -2,22 +2,30 @@ import { useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import { AUTH_ERRORS } from '@/types/auth'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AuthBackground } from '@/components/ui/auth-background'
+
+/**
+ * Login - Premium Authentication Page
+ * 
+ * Design principles:
+ * - Charcoal/graphite background
+ * - Soft off-white text
+ * - Muted warm yellow accent for primary actions only
+ * - No cyberpunk elements (no neon, no glowing borders)
+ * - Clean, calm, professional
+ */
+
 
 export default function Login() {
-    // Modes: 'email-signin', 'email-signup', 'phone', 'otp'
     const [mode, setMode] = useState<'email-signin' | 'email-signup' | 'phone' | 'otp'>('email-signin')
-
-    // Form State
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
     const [otp, setOtp] = useState('')
-
-    // UI State
     const [countdown, setCountdown] = useState(0)
     const [validationError, setValidationError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -29,9 +37,7 @@ export default function Login() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (user) {
-            navigate('/')
-        }
+        if (user) navigate('/onboarding')
     }, [user, navigate])
 
     useEffect(() => {
@@ -56,9 +62,7 @@ export default function Login() {
         if (mode === 'email-signup') {
             const { error } = await signUpWithPassword(email, password)
             if (!error) {
-                setSuccessMessage("Account created! Please check your email to verify (or just sign in if testing).")
-                // In dev mode/supabase placeholder, it might auto-confirm or not.
-                // If it auto-confirms, we can auto-login? supabase.auth.signUp often auto-logs in if email confirm is off.
+                setSuccessMessage("Account created. Check your email to verify.")
             }
         } else {
             await signInWithPassword(email, password)
@@ -74,7 +78,7 @@ export default function Login() {
 
         const cleanPhone = sanitizePhone(phoneNumber)
         if (!/^\+[1-9]\d{1,14}$/.test(cleanPhone)) {
-            setValidationError('Please enter a valid phone number in E.164 format (e.g., +1234567890)')
+            setValidationError('Enter a valid phone number (e.g., +1234567890)')
             return
         }
 
@@ -100,102 +104,113 @@ export default function Login() {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-background p-4 animate-fade-in relative overflow-hidden">
-            {/* Background Decoration */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-
-            <Card className="w-full max-w-md border-primary/50 shadow-[0_0_50px_rgba(0,240,255,0.1)] backdrop-blur-xl bg-black/40">
-                <CardHeader className="text-center space-y-2">
-                    <CardTitle className="text-3xl glitch-effect" data-text="Identify">
-                        Identify
-                    </CardTitle>
-                    <CardDescription className="text-primary/80 font-mono text-xs uppercase tracking-widest">
-                        SkillOS Secure Gateway v2.5
-                    </CardDescription>
+        <AuthBackground>
+            {/* Auth Card - Centered, max-width 400px, premium feel */}
+            <Card className="w-full max-w-[400px] bg-[#1A1D20] border-[rgba(255,255,255,0.08)] rounded-xl">
+                <CardHeader className="text-center pb-2 pt-8">
+                    <h1 className="text-[22px] font-semibold text-[#E8E6E3] tracking-tight">
+                        {mode === 'email-signup' ? 'Create Account' : 'Sign In'}
+                    </h1>
+                    <p className="text-[13px] text-[#6B6966] mt-1">
+                        SkillOS Authentication
+                    </p>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
-                    {/* Alerts */}
+                <CardContent className="px-6 pb-6 space-y-5">
+                    {/* Error Alert */}
                     {(error || validationError) && (
-                        <div className="p-3 bg-destructive/10 border border-destructive/50 rounded-md text-destructive text-sm flex items-center gap-2">
-                            <span>⚠</span>
+                        <div className="p-3 bg-[rgba(184,84,80,0.08)] border border-[rgba(184,84,80,0.2)] rounded-lg text-[#B85450] text-[13px] flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-[#B85450] rounded-full" />
                             {validationError || (error?.message === 'Rate limit exceeded' ? AUTH_ERRORS.RATE_LIMIT : error?.message)}
                         </div>
                     )}
+
+                    {/* Success Alert */}
                     {successMessage && (
-                        <div className="p-3 bg-green-500/10 border border-green-500/50 rounded-md text-green-500 text-sm flex items-center gap-2">
-                            <span>✓</span>
+                        <div className="p-3 bg-[rgba(90,154,90,0.08)] border border-[rgba(90,154,90,0.2)] rounded-lg text-[#5A9A5A] text-[13px] flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-[#5A9A5A] rounded-full" />
                             {successMessage}
                         </div>
                     )}
 
-                    {/* EMAIL MODES */}
+                    {/* Email Auth Forms */}
                     {(mode === 'email-signin' || mode === 'email-signup') && (
                         <form onSubmit={handleEmailAuth} className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-xs font-mono text-muted-foreground uppercase">Email Address</Label>
+                                <Label className="text-[12px] font-medium text-[#6B6966]">Email</Label>
                                 <Input
                                     type="email"
-                                    placeholder="user@skillos.app"
-                                    className="font-mono bg-black/50 border-primary/30 focus-visible:ring-primary/50"
+                                    placeholder="you@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={loading}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs font-mono text-muted-foreground uppercase">Password</Label>
+                                <Label className="text-[12px] font-medium text-[#6B6966]">Password</Label>
                                 <Input
                                     type="password"
                                     placeholder="••••••••"
-                                    className="font-mono bg-black/50 border-primary/30 focus-visible:ring-primary/50"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
                                 />
                             </div>
-                            <Button type="submit" className="w-full font-bold tracking-wider" variant="neon" disabled={loading}>
-                                {loading ? 'PROCESSING...' : (mode === 'email-signup' ? 'REGISTER NEW ID' : 'AUTHENTICATE')}
+
+                            {/* Primary Button - Uses accent yellow */}
+                            <Button
+                                type="submit"
+                                className="w-full h-10 mt-2"
+                                disabled={loading}
+                            >
+                                {loading ? 'Processing...' : (mode === 'email-signup' ? 'Create Account' : 'Sign In')}
                             </Button>
 
-                            <div className="text-center text-xs text-muted-foreground font-mono space-y-2">
-                                <button type="button" onClick={() => switchMode(mode === 'email-signin' ? 'email-signup' : 'email-signin')} className="hover:text-primary transition-colors underline decoration-dotted">
-                                    {mode === 'email-signin' ? 'Create new credentials' : 'Already have credentials?'}
+                            <div className="text-center space-y-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => switchMode(mode === 'email-signin' ? 'email-signup' : 'email-signin')}
+                                    className="text-[13px] text-[#6B6966] hover:text-[#9A9996] transition-colors"
+                                >
+                                    {mode === 'email-signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
                                 </button>
-                                <div className="pt-2 border-t border-white/5">
-                                    <button type="button" onClick={() => switchMode('phone')} className="text-primary/70 hover:text-primary transition-colors">
-                                        Use Comm Link (Phone) Instead
+                                <div className="border-t border-[rgba(255,255,255,0.04)] pt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => switchMode('phone')}
+                                        className="text-[12px] text-[#4A4845] hover:text-[#6B6966] transition-colors"
+                                    >
+                                        Sign in with phone instead
                                     </button>
                                 </div>
                             </div>
                         </form>
                     )}
 
-                    {/* PHONE MODES */}
+                    {/* Phone Auth Forms */}
                     {(mode === 'phone' || mode === 'otp') && (
                         <>
                             {mode === 'phone' ? (
                                 <form onSubmit={handleSendOTP} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-mono text-muted-foreground uppercase">Comm Link (E.164)</Label>
+                                        <Label className="text-[12px] font-medium text-[#6B6966]">Phone Number</Label>
                                         <Input
                                             placeholder="+1234567890"
-                                            className="font-mono text-lg bg-black/50 border-primary/30 focus-visible:ring-primary/50"
                                             value={phoneNumber}
                                             onChange={(e) => setPhoneNumber(e.target.value)}
                                             disabled={loading}
                                         />
                                     </div>
-                                    <Button type="submit" className="w-full font-bold tracking-wider" variant="neon" disabled={loading}>
-                                        {loading ? 'INITIATING...' : 'ESTABLISH LINK'}
+                                    <Button type="submit" className="w-full h-10" disabled={loading}>
+                                        {loading ? 'Sending...' : 'Send Code'}
                                     </Button>
                                 </form>
                             ) : (
                                 <form onSubmit={handleVerifyOTP} className="space-y-4">
                                     <div className="space-y-2 text-center">
-                                        <Label className="text-xs font-mono text-muted-foreground uppercase">One-Time Security Token</Label>
+                                        <Label className="text-[12px] font-medium text-[#6B6966]">Enter Verification Code</Label>
                                         <Input
-                                            className="font-mono text-3xl text-center tracking-[0.5em] bg-black/50 border-primary/30 focus-visible:ring-primary/50 h-16"
+                                            className="text-center text-[24px] tracking-[0.3em] h-14 font-mono"
                                             placeholder="000000"
                                             maxLength={6}
                                             value={otp}
@@ -203,29 +218,41 @@ export default function Login() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    <Button type="submit" className="w-full font-bold tracking-wider" variant="neon" disabled={loading}>
-                                        {loading ? 'DECRYPTING...' : 'AUTHENTICATE'}
+                                    <Button type="submit" className="w-full h-10" disabled={loading}>
+                                        {loading ? 'Verifying...' : 'Verify'}
                                     </Button>
-                                    <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
-                                        <button type="button" onClick={() => switchMode('phone')} className="hover:text-primary transition-colors">← CHANGE FREQ</button>
-                                        <button type="button" onClick={() => handleSendOTP({ preventDefault: () => { } } as any)} disabled={countdown > 0} className={countdown > 0 ? 'opacity-50' : 'hover:text-primary transition-colors'}>
-                                            {countdown > 0 ? `RETRY IN ${countdown}s` : 'RESEND TOKEN'}
+                                    <div className="flex justify-between text-[12px] text-[#4A4845]">
+                                        <button type="button" onClick={() => switchMode('phone')} className="hover:text-[#6B6966] transition-colors">
+                                            ← Change number
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSendOTP({ preventDefault: () => { } } as any)}
+                                            disabled={countdown > 0}
+                                            className={countdown > 0 ? 'opacity-50' : 'hover:text-[#6B6966] transition-colors'}
+                                        >
+                                            {countdown > 0 ? `Resend in ${countdown}s` : 'Resend code'}
                                         </button>
                                     </div>
                                 </form>
                             )}
-                            <div className="text-center text-xs text-muted-foreground font-mono pt-4 border-t border-white/5">
-                                <button type="button" onClick={() => switchMode('email-signin')} className="text-primary/70 hover:text-primary transition-colors">
-                                    Use Standard Email Protocol
+                            <div className="text-center border-t border-[rgba(255,255,255,0.04)] pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => switchMode('email-signin')}
+                                    className="text-[12px] text-[#4A4845] hover:text-[#6B6966] transition-colors"
+                                >
+                                    Sign in with email instead
                                 </button>
                             </div>
                         </>
                     )}
                 </CardContent>
-                <CardFooter className="justify-center border-t border-white/5 pt-4">
-                    <p className="text-[10px] text-muted-foreground font-mono">SECURE CONNECTION // ENCRYPTED</p>
+
+                <CardFooter className="justify-center pb-6 pt-0">
+                    <p className="text-[10px] text-[#4A4845]">Secure • Encrypted • Private</p>
                 </CardFooter>
             </Card>
-        </div>
+        </AuthBackground>
     )
 }

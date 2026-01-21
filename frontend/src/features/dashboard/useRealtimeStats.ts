@@ -55,7 +55,22 @@ export function useRealtimeStats() {
         // 1. Fetch initial
         fetchInitialData()
 
-        // 2. Subscribe
+        // 2. Trigger Calculation Periodically (Heartbeat)
+        const heartbeat = setInterval(async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calc-system-stats`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ user_id: user.id })
+                })
+            }
+        }, 60000) // Every minute
+
+        // 3. Subscribe
         const channel = supabase
             .channel('system-stats-monitor')
             .on(
@@ -98,6 +113,7 @@ export function useRealtimeStats() {
 
         return () => {
             supabase.removeChannel(channel)
+            clearInterval(heartbeat)
         }
     }, [fetchInitialData])
 

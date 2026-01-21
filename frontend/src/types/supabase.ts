@@ -44,6 +44,7 @@ export interface Database {
                     title: string
                     description: string | null
                     difficulty: number | null
+                    priority: string | null
                     status: 'pending' | 'active' | 'completed'
                     created_at: string
                     completed_at: string | null
@@ -55,6 +56,7 @@ export interface Database {
                     title: string
                     description?: string | null
                     difficulty?: number | null
+                    priority?: string | null
                     status?: 'pending' | 'active' | 'completed'
                     created_at?: string
                     completed_at?: string | null
@@ -65,6 +67,7 @@ export interface Database {
                     title?: string
                     description?: string | null
                     difficulty?: number | null
+                    priority?: string | null
                     status?: 'pending' | 'active' | 'completed'
                     created_at?: string
                     completed_at?: string | null
@@ -84,7 +87,7 @@ export interface Database {
                     user_id: string
                     content: string
                     tags: string[]
-                    embedding: string | null // Vector is typically a string in JSON response or number[] depending on client usage
+                    embedding: string | null
                     created_at: string
                 }
                 Insert: {
@@ -174,6 +177,180 @@ export interface Database {
                     }
                 ]
             }
+            placement_profiles: {
+                Row: {
+                    id: string
+                    user_id: string
+                    target_role: string
+                    target_company: string | null
+                    experience_level: string
+                    current_skills: Json
+                    required_skills: Json
+                    skill_gaps: Json
+                    timeline_weeks: number
+                    status: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    target_role: string
+                    target_company?: string | null
+                    experience_level?: string
+                    current_skills?: Json
+                    required_skills?: Json
+                    skill_gaps?: Json
+                    timeline_weeks?: number
+                    status?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    target_role?: string
+                    target_company?: string | null
+                    experience_level?: string
+                    current_skills?: Json
+                    required_skills?: Json
+                    skill_gaps?: Json
+                    timeline_weeks?: number
+                    status?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            learning_plans: {
+                Row: {
+                    id: string
+                    user_id: string
+                    profile_id: string
+                    week_number: number
+                    daily_plan: Json
+                    resources: Json
+                    status: string
+                    version: number
+                    progress_percent: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    profile_id: string
+                    week_number?: number
+                    daily_plan?: Json
+                    resources?: Json
+                    status?: string
+                    version?: number
+                    progress_percent?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    profile_id?: string
+                    week_number?: number
+                    daily_plan?: Json
+                    resources?: Json
+                    status?: string
+                    version?: number
+                    progress_percent?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            mock_interviews: {
+                Row: {
+                    id: string
+                    user_id: string
+                    profile_id: string
+                    interview_type: string
+                    difficulty: string
+                    questions: Json
+                    overall_score: number | null
+                    feedback: string | null
+                    areas_to_improve: Json
+                    audio_url: string | null
+                    duration_seconds: number | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    profile_id: string
+                    interview_type?: string
+                    difficulty?: string
+                    questions?: Json
+                    overall_score?: number | null
+                    feedback?: string | null
+                    areas_to_improve?: Json
+                    audio_url?: string | null
+                    duration_seconds?: number | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    profile_id?: string
+                    interview_type?: string
+                    difficulty?: string
+                    questions?: Json
+                    overall_score?: number | null
+                    feedback?: string | null
+                    areas_to_improve?: Json
+                    audio_url?: string | null
+                    duration_seconds?: number | null
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            skill_progress: {
+                Row: {
+                    id: string
+                    user_id: string
+                    profile_id: string
+                    skill_name: string
+                    initial_level: number
+                    current_level: number
+                    target_level: number
+                    practice_count: number
+                    last_practiced: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    profile_id: string
+                    skill_name: string
+                    initial_level?: number
+                    current_level?: number
+                    target_level?: number
+                    practice_count?: number
+                    last_practiced?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    profile_id?: string
+                    skill_name?: string
+                    initial_level?: number
+                    current_level?: number
+                    target_level?: number
+                    practice_count?: number
+                    last_practiced?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            }
         }
         Views: {
             [_ in never]: never
@@ -189,3 +366,4 @@ export interface Database {
         }
     }
 }
+
