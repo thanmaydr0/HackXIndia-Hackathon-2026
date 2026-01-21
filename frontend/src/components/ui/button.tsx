@@ -25,6 +25,9 @@ const buttonVariants = cva(
 
                 // Link - Text only
                 link: "text-[#C49B3A] underline-offset-4 hover:text-[#D4A844] hover:underline",
+
+                // Neon - Glowing accent
+                neon: "bg-gradient-to-r from-violet-600 to-purple-600 text-white border border-violet-500/50 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:from-violet-500 hover:to-purple-500",
             },
             size: {
                 default: "h-9 px-4 py-2",

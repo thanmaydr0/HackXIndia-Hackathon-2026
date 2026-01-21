@@ -60,6 +60,7 @@ export interface Database {
                     status?: 'pending' | 'active' | 'completed'
                     created_at?: string
                     completed_at?: string | null
+                    deleted_at?: string | null
                 }
                 Update: {
                     id?: string
@@ -71,6 +72,7 @@ export interface Database {
                     status?: 'pending' | 'active' | 'completed'
                     created_at?: string
                     completed_at?: string | null
+                    deleted_at?: string | null
                 }
                 Relationships: [
                     {
@@ -121,6 +123,7 @@ export interface Database {
                     user_id: string
                     cognitive_load: number | null
                     energy_level: number | null
+                    session_started_at: string | null
                     created_at: string
                 }
                 Insert: {
@@ -128,6 +131,7 @@ export interface Database {
                     user_id: string
                     cognitive_load?: number | null
                     energy_level?: number | null
+                    session_started_at?: string | null
                     created_at?: string
                 }
                 Update: {
@@ -135,6 +139,7 @@ export interface Database {
                     user_id?: string
                     cognitive_load?: number | null
                     energy_level?: number | null
+                    session_started_at?: string | null
                     created_at?: string
                 }
                 Relationships: [
@@ -274,6 +279,7 @@ export interface Database {
                     questions: Json
                     overall_score: number | null
                     feedback: string | null
+                    tips: string[] | null
                     areas_to_improve: Json
                     audio_url: string | null
                     duration_seconds: number | null
@@ -288,6 +294,7 @@ export interface Database {
                     questions?: Json
                     overall_score?: number | null
                     feedback?: string | null
+                    tips?: string[] | null
                     areas_to_improve?: Json
                     audio_url?: string | null
                     duration_seconds?: number | null
@@ -302,6 +309,7 @@ export interface Database {
                     questions?: Json
                     overall_score?: number | null
                     feedback?: string | null
+                    tips?: string[] | null
                     areas_to_improve?: Json
                     audio_url?: string | null
                     duration_seconds?: number | null
@@ -351,12 +359,140 @@ export interface Database {
                 }
                 Relationships: []
             }
+            browsing_sessions: {
+                Row: {
+                    id: string
+                    user_id: string
+                    started_at: string
+                    ended_at: string | null
+                    pages_visited: number
+                    notes_created: number
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    started_at?: string
+                    ended_at?: string | null
+                    pages_visited?: number
+                    notes_created?: number
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    started_at?: string
+                    ended_at?: string | null
+                    pages_visited?: number
+                    notes_created?: number
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            smart_notes: {
+                Row: {
+                    id: string
+                    user_id: string
+                    session_id: string | null
+                    title: string
+                    content: string
+                    sources: Json
+                    is_favorite: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    session_id?: string | null
+                    title: string
+                    content: string
+                    sources?: Json
+                    is_favorite?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    session_id?: string | null
+                    title?: string
+                    content?: string
+                    sources?: Json
+                    is_favorite?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            break_logs: {
+                Row: {
+                    id: string
+                    user_id: string
+                    break_type: string
+                    duration_seconds: number
+                    completed: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    break_type: string
+                    duration_seconds?: number
+                    completed?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    break_type?: string
+                    duration_seconds?: number
+                    completed?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
+            panic_events: {
+                Row: {
+                    id: string
+                    user_id: string
+                    type: string
+                    severity: number
+                    resolved: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    type: string
+                    severity?: number
+                    resolved?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    type?: string
+                    severity?: number
+                    resolved?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
         }
         Views: {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            match_learning_logs: {
+                Args: {
+                    query_embedding: string
+                    match_threshold: number
+                    match_count: number
+                }
+                Returns: {
+                    id: string
+                    content: string
+                    similarity: number
+                }[]
+            }
         }
         Enums: {
             [_ in never]: never
@@ -366,4 +502,3 @@ export interface Database {
         }
     }
 }
-
