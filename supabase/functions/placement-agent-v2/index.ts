@@ -59,6 +59,8 @@ serve(async (req) => {
             case 'deep_role_analysis': {
                 const { role, location = 'Remote', experience_level = 'mid' } = data
                 const normalizedRole = role.toLowerCase().trim()
+                let analysis: any = null
+                let fromCache = false
 
                 // Try to check cache first (ignore errors if table doesn't exist)
                 try {
@@ -71,26 +73,27 @@ serve(async (req) => {
                         .single()
 
                     if (cached) {
-                        result = { cached: true, ...cached.analysis_data }
-                        break
+                        analysis = cached.analysis_data
+                        fromCache = true
                     }
                 } catch (cacheErr) {
-                    console.log('Cache check failed (table may not exist):', cacheErr)
+                    console.log('Cache check failed:', cacheErr)
                 }
 
-                // Deep research using gpt-4o
-                const completion = await openai.chat.completions.create({
-                    model: MODELS.DEEP_RESEARCH,
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are an expert career analyst with deep knowledge of the tech job market.
+                // If not in cache, generate with AI
+                if (!analysis) {
+                    const completion = await openai.chat.completions.create({
+                        model: MODELS.DEEP_RESEARCH,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are an expert career analyst with deep knowledge of the tech job market.
 Conduct comprehensive research and return a detailed JSON analysis.
 Be specific with numbers, companies, and actionable insights.`
-                        },
-                        {
-                            role: 'user',
-                            content: `Analyze the role: "${role}" at ${experience_level} level in ${location}.
+                            },
+                            {
+                                role: 'user',
+                                content: `Analyze the role: "${role}" at ${experience_level} level in ${location}.
 
 Research and provide:
 1. Market demand analysis (hiring trends, competition)
@@ -120,30 +123,31 @@ Return as JSON:
   "insider_tips": ["string"],
   "preparation_timeline": { "minimum_weeks": 4, "recommended_weeks": 8 }
 }`
-                        }
-                    ],
-                    max_tokens: 4000,
-                    response_format: { type: 'json_object' },
-                })
-
-                const analysis = JSON.parse(completion.choices[0].message.content || '{}')
-
-                // Try to cache the result (ignore errors)
-                try {
-                    await supabase.from('role_analysis_cache').insert({
-                        role_name: role,
-                        normalized_role: normalizedRole,
-                        location,
-                        analysis_data: analysis,
-                        salary_benchmarks: analysis.salary,
-                        skill_trends: analysis.trends,
-                        top_companies: analysis.top_companies
+                            }
+                        ],
+                        max_tokens: 4000,
+                        response_format: { type: 'json_object' },
                     })
-                } catch (cacheErr) {
-                    console.log('Cache insert failed (table may not exist):', cacheErr)
+
+                    analysis = JSON.parse(completion.choices[0].message.content || '{}')
+
+                    // Cache the result
+                    try {
+                        await supabase.from('role_analysis_cache').insert({
+                            role_name: role,
+                            normalized_role: normalizedRole,
+                            location,
+                            analysis_data: analysis,
+                            salary_benchmarks: analysis.salary,
+                            skill_trends: analysis.trends,
+                            top_companies: analysis.top_companies
+                        })
+                    } catch (cacheErr) {
+                        console.log('Cache insert failed:', cacheErr)
+                    }
                 }
 
-                // Create/update user profile
+                // Create/update user profile (ALWAYS do this, even if cached)
                 let profileId = null
                 try {
                     const { data: profile } = await supabase
@@ -174,8 +178,9 @@ Return as JSON:
 
                 result = {
                     profile_id: profileId,
-                    analysis,
-                    message: `Deep analysis complete for ${role}. Found ${analysis.required_skills?.length || 0} key skills and ${analysis.top_companies?.length || 0} target companies.`
+                    analysis: analysis,
+                    cached: fromCache,
+                    message: `Deep analysis complete for ${role}. Found ${analysis.required_skills?.length || 0} key skills.`
                 }
                 break
             }
