@@ -40,14 +40,23 @@ export function useBrowserSession() {
     })
 
     // Save session to DB on start
+    const initialized = useRef(false)
     useEffect(() => {
-        if (!user?.id) return
+        if (!user?.id || initialized.current) return
+        initialized.current = true
 
         supabase.from('browsing_sessions').insert({
             id: sessionRef.current,
             user_id: user.id,
             started_at: new Date().toISOString()
-        }).then(() => console.log('Session started:', sessionRef.current))
+        }).then(({ error }) => {
+            if (error) {
+                // Ignore 409 conflict, likely strict mode double-invokation
+                if (error.code !== '23505') console.error('Session init error:', error)
+            } else {
+                console.log('Session started:', sessionRef.current)
+            }
+        })
     }, [user?.id])
 
     // Add item to context
@@ -154,6 +163,27 @@ export function useBrowserSession() {
         }
     }, [session.contextItems, session.sessionId, user?.id])
 
+    // Contextual Bridge Analysis
+    const analyzeGap = useCallback(async (content: string, url: string) => {
+        if (!content || !user?.id) return null
+
+        try {
+            const { data, error } = await supabase.functions.invoke('analyze-gap', {
+                body: {
+                    page_content: content,
+                    page_url: url,
+                    user_id: user.id
+                }
+            })
+
+            if (error) throw error
+            return data
+        } catch (err) {
+            console.error('Bridge analysis failed:', err)
+            return null
+        }
+    }, [user?.id])
+
     // End session
     const endSession = useCallback(async () => {
         if (!user?.id) return
@@ -185,6 +215,7 @@ export function useBrowserSession() {
         removeFromContext,
         getContextSummary,
         generateNotes,
+        analyzeGap,
         endSession
     }
 }

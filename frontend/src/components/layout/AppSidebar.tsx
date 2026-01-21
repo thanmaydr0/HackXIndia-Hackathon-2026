@@ -46,6 +46,7 @@ export function AppSidebar() {
         { icon: Shield, label: "Firewall", path: "/firewall" },
         { icon: Globe, label: "Browser", path: "/browser" },
         { icon: FileText, label: "Resources", path: "/resources" },
+        { icon: Zap, label: "Skill Bridge", path: "/bridge" },
     ]
 
     return (

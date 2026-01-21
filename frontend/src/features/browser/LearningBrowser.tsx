@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/features/auth/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -10,8 +11,9 @@ import {
     MessageCircle, Mic, MicOff, X,
     Send, Sparkles, ExternalLink, Star, Eye, Camera, Upload,
     Volume2, VolumeX, Loader2, AlertTriangle, Clipboard,
-    BookOpen, Code, Database, Lightbulb, TrendingUp, Play, Youtube, Scan, FileDown, Layers
+    BookOpen, Code, Database, Lightbulb, TrendingUp, Play, Youtube, Scan, FileDown, Layers, Zap
 } from 'lucide-react'
+import { ContextPanel, type BridgeAnalysis } from './ContextPanel'
 
 interface ChatMessage {
     role: 'user' | 'assistant'
@@ -31,11 +33,16 @@ interface SiteRecommendation {
 
 export default function LearningBrowser() {
     const { user } = useAuth()
+    const [searchParams] = useSearchParams()
+
+    // Auto-analysis state
+    const autoAnalyze = searchParams.get('autoAnalyze') === 'true'
+    const initialUrl = searchParams.get('url') || ''
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const [url, setUrl] = useState('')
-    const [inputUrl, setInputUrl] = useState('')
+    const [url, setUrl] = useState(initialUrl)
+    const [inputUrl, setInputUrl] = useState(initialUrl)
     const [isLoading, setIsLoading] = useState(false)
     const [pageContent, setPageContent] = useState<string | null>(null)
     const [pageTitle, setPageTitle] = useState('')
@@ -51,6 +58,24 @@ export default function LearningBrowser() {
     const [isTyping, setIsTyping] = useState(false)
     const [isRecording, setIsRecording] = useState(false)
     const [isSpeaking, setIsSpeaking] = useState(false)
+
+    // Initial Load & Auto Analysis
+    useEffect(() => {
+        if (initialUrl && !url) {
+            navigateTo(initialUrl)
+        }
+        if (autoAnalyze) {
+            setContextPanelOpen(true)
+            setIsAnalyzing(true)
+        }
+    }, [initialUrl])
+
+    // Trigger analysis once content is loaded if requested
+    useEffect(() => {
+        if (autoAnalyze && pageText && !bridgeAnalysis) {
+            onAnalyzeGap()
+        }
+    }, [pageText, autoAnalyze])
     const [isAnalyzing, setIsAnalyzing] = useState(false)
 
     // Screenshot upload state
@@ -72,8 +97,29 @@ export default function LearningBrowser() {
         contextCount,
         addToContext,
         generateNotes,
-        isGeneratingNotes
+        isGeneratingNotes,
+        analyzeGap
     } = useBrowserSession()
+
+    // Context Bridge State
+    const [contextPanelOpen, setContextPanelOpen] = useState(false)
+    const [bridgeAnalysis, setBridgeAnalysis] = useState<BridgeAnalysis | null>(null)
+
+    const onAnalyzeGap = async () => {
+        if (!pageText) return
+        setIsAnalyzing(true)
+        setContextPanelOpen(true)
+        setBridgeAnalysis(null) // Reset previous
+
+        try {
+            const result = await analyzeGap(pageText, url)
+            if (result) setBridgeAnalysis(result)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setIsAnalyzing(false)
+        }
+    }
 
     const embeddableSites: SiteRecommendation[] = [
         { url: 'https://developer.mozilla.org', title: 'MDN', description: 'Web docs', icon: <BookOpen className="w-5 h-5" />, color: '#3B82F6' },
@@ -634,6 +680,16 @@ export default function LearningBrowser() {
                             </button>
                         )}
 
+                        <button type="button" onClick={onAnalyzeGap} disabled={isAnalyzing || !pageText}
+                            className={cn(
+                                "p-2 rounded-lg transition-colors",
+                                isAnalyzing ? "animate-pulse" : "",
+                                !pageText ? "text-gray-600 cursor-not-allowed opacity-50" : "bg-[rgba(168,85,247,0.15)] text-purple-400 hover:bg-[rgba(168,85,247,0.25)]"
+                            )}
+                            title={!pageText ? "Navigate to a page to analyze skills" : "Contextual Skill Bridge (Analyze Gap)"}>
+                            <Zap className="w-4 h-4" />
+                        </button>
+
                         {pageText && (
                             <div className="flex items-center gap-1 px-2 py-1 bg-[rgba(196,155,58,0.1)] rounded-lg">
                                 <Eye className="w-3 h-3 text-[#C49B3A]" />
@@ -809,6 +865,19 @@ export default function LearningBrowser() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+
+
+
+            <ContextPanel
+                isOpen={contextPanelOpen}
+                onClose={() => setContextPanelOpen(false)}
+                isLoading={isAnalyzing && !bridgeAnalysis}
+                analysis={bridgeAnalysis}
+                onAddToTasks={(task) => {
+                    // Start a task creation flow (could be integrated with TaskManager later)
+                    alert(`Added task: ${task.title}`)
+                }}
+            />
+        </div >
     )
 }

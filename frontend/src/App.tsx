@@ -16,6 +16,7 @@ import SkillPackageManager from './features/skills/SkillPackageManager'
 import CognitiveFirewall from './features/firewall/CognitiveFirewall'
 import LearningBrowser from './features/browser/LearningBrowser'
 import { ResourcesPage } from './features/resources'
+import SkillBridgePage from './pages/SkillBridgePage'
 
 import { Toaster } from 'sonner'
 
@@ -47,6 +48,7 @@ function App() {
             <Route path="/firewall" element={<CognitiveFirewall />} />
             <Route path="/browser" element={<LearningBrowser />} />
             <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/bridge" element={<SkillBridgePage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
